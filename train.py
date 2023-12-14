@@ -21,6 +21,7 @@ import time
 import math
 import pickle
 from contextlib import nullcontext
+import random
 
 import numpy as np
 import torch
@@ -111,10 +112,138 @@ device_type = 'cuda' if 'cuda' in device else 'cpu' # for later use in torch.aut
 ptdtype = {'float32': torch.float32, 'bfloat16': torch.bfloat16, 'float16': torch.float16}[dtype]
 ctx = nullcontext() if device_type == 'cpu' else torch.amp.autocast(device_type=device_type, dtype=ptdtype)
 
+'''
 # poor man's data loader
 data_dir = os.path.join('data', dataset)
 train_data = np.memmap(os.path.join(data_dir, 'train.bin'), dtype=np.uint16, mode='r')
 val_data = np.memmap(os.path.join(data_dir, 'val.bin'), dtype=np.uint16, mode='r')
+'''
+
+'''
+# Just for counting:
+from data.counting.prepare import train_data, val_data, encode, decode, ALPHABET_SIZE
+meta_vocab_size = ALPHABET_SIZE + 3
+random.seed(5)
+
+'''
+
+'''
+# Just for decimal counting
+from data.counting_decimal.prepare import train_data, val_data, encode, decode, ENCODED_ALPHABET_SIZE, meta_vocab_size
+# meta_vocab_size = ENCODED_ALPHABET_SIZE + 3 # + 4
+random.seed(5)
+'''
+
+'''
+# Just for sorting
+from data.sorting.prepare import generate_some, encode, decode, meta_vocab_size
+'''
+
+'''
+# Just for mode
+from data.mode.prepare import generate_some, encode, decode, meta_vocab_size
+'''
+
+'''
+# Just for parity with scratchpad
+from data.parity.prepare import generate_some, encode, decode, meta_vocab_size
+'''
+
+'''
+from data.mtml_with_specific_encoding.prepare import generate_some, encode, decode, meta_vocab_size
+'''
+
+from data.modular_arithmetic_simple.prepare import generate_some, encode, decode, meta_vocab_size
+
+def get_batch_modular_arithmetic_simple(split):
+    data = generate_some(200, split)
+    # no shuffling needed, already shuffled
+    data = np.array(encode(data), dtype = np.uint16)
+    ix = torch.randint(len(data) - block_size, (batch_size,))
+    x = torch.stack([torch.from_numpy((data[i:i+block_size]).astype(np.int64)) for i in ix])
+    y = torch.stack([torch.from_numpy((data[i+1:i+1+block_size]).astype(np.int64)) for i in ix])
+    if device_type == 'cuda':
+        # pin arrays x,y, which allows us to move them to GPU asynchronously (non_blocking=True)
+        x, y = x.pin_memory().to(device, non_blocking=True), y.pin_memory().to(device, non_blocking=True)
+    else:
+        x, y = x.to(device), y.to(device)
+    return x, y
+
+def get_batch_mtml_mode_parity_counting(split, debug = False):
+    task_id = random.randint(1, 3)
+    data = generate_some(500, split, fixed_task_id = task_id)
+    # no shuffling needed, already shuffled
+    data = np.array(encode(data), dtype = np.uint16)
+    if debug:
+        print(data.tolist())
+    ix = torch.randint(len(data) - block_size, (batch_size,))
+    x = torch.stack([torch.from_numpy((data[i:i+block_size]).astype(np.int64)) for i in ix])
+    y = torch.stack([torch.from_numpy((data[i+1:i+1+block_size]).astype(np.int64)) for i in ix])
+    if device_type == 'cuda':
+        # pin arrays x,y, which allows us to move them to GPU asynchronously (non_blocking=True)
+        x, y = x.pin_memory().to(device, non_blocking=True), y.pin_memory().to(device, non_blocking=True)
+    else:
+        x, y = x.to(device), y.to(device)
+    return x, y
+
+
+def get_batch_mode(split):
+    data = generate_some(200, split)
+    # no shuffling needed, already shuffled
+    data = np.array(encode(data), dtype = np.uint16)
+    ix = torch.randint(len(data) - block_size, (batch_size,))
+    x = torch.stack([torch.from_numpy((data[i:i+block_size]).astype(np.int64)) for i in ix])
+    y = torch.stack([torch.from_numpy((data[i+1:i+1+block_size]).astype(np.int64)) for i in ix])
+    if device_type == 'cuda':
+        # pin arrays x,y, which allows us to move them to GPU asynchronously (non_blocking=True)
+        x, y = x.pin_memory().to(device, non_blocking=True), y.pin_memory().to(device, non_blocking=True)
+    else:
+        x, y = x.to(device), y.to(device)
+    return x, y
+
+def get_batch_sorting(split):
+    data = generate_some(500, split)
+    # no shuffling needed, already shuffled
+    data = np.array(encode(data), dtype = np.uint16)
+    ix = torch.randint(len(data) - block_size, (batch_size,))
+    x = torch.stack([torch.from_numpy((data[i:i+block_size]).astype(np.int64)) for i in ix])
+    y = torch.stack([torch.from_numpy((data[i+1:i+1+block_size]).astype(np.int64)) for i in ix])
+    if device_type == 'cuda':
+        # pin arrays x,y, which allows us to move them to GPU asynchronously (non_blocking=True)
+        x, y = x.pin_memory().to(device, non_blocking=True), y.pin_memory().to(device, non_blocking=True)
+    else:
+        x, y = x.to(device), y.to(device)
+    return x, y
+
+
+def get_batch_counting(split):
+    data = train_data if split == 'train' else val_data
+    random.shuffle(data)
+    data = np.array(encode(data), dtype = np.uint16)
+    ix = torch.randint(len(data) - block_size, (batch_size,))
+    x = torch.stack([torch.from_numpy((data[i:i+block_size]).astype(np.int64)) for i in ix])
+    y = torch.stack([torch.from_numpy((data[i+1:i+1+block_size]).astype(np.int64)) for i in ix])
+    if device_type == 'cuda':
+        # pin arrays x,y, which allows us to move them to GPU asynchronously (non_blocking=True)
+        x, y = x.pin_memory().to(device, non_blocking=True), y.pin_memory().to(device, non_blocking=True)
+    else:
+        x, y = x.to(device), y.to(device)
+    return x, y
+
+def get_batch_parity(split):
+    data = generate_some(100, split)
+    # no shuffling needed, already shuffled
+    data = np.array(encode(data), dtype = np.uint16)
+    ix = torch.randint(len(data) - block_size, (batch_size,))
+    x = torch.stack([torch.from_numpy((data[i:i+block_size]).astype(np.int64)) for i in ix])
+    y = torch.stack([torch.from_numpy((data[i+1:i+1+block_size]).astype(np.int64)) for i in ix])
+    if device_type == 'cuda':
+        # pin arrays x,y, which allows us to move them to GPU asynchronously (non_blocking=True)
+        x, y = x.pin_memory().to(device, non_blocking=True), y.pin_memory().to(device, non_blocking=True)
+    else:
+        x, y = x.to(device), y.to(device)
+    return x, y
+
 def get_batch(split):
     data = train_data if split == 'train' else val_data
     ix = torch.randint(len(data) - block_size, (batch_size,))
@@ -132,6 +261,7 @@ iter_num = 0
 best_val_loss = 1e9
 
 # attempt to derive vocab_size from the dataset
+'''
 meta_path = os.path.join(data_dir, 'meta.pkl')
 meta_vocab_size = None
 if os.path.exists(meta_path):
@@ -139,6 +269,7 @@ if os.path.exists(meta_path):
         meta = pickle.load(f)
     meta_vocab_size = meta['vocab_size']
     print(f"found vocab_size = {meta_vocab_size} (inside {meta_path})")
+'''
 
 # model init
 model_args = dict(n_layer=n_layer, n_head=n_head, n_embd=n_embd, block_size=block_size,
@@ -216,7 +347,13 @@ def estimate_loss():
     for split in ['train', 'val']:
         losses = torch.zeros(eval_iters)
         for k in range(eval_iters):
-            X, Y = get_batch(split)
+            X, Y = get_batch_modular_arithmetic_simple(split) # (k <= 2))
+            '''
+            if k <= 2:
+                print(f"Three X samples from {split}", X[:3])
+                print(f"Three Y samples from {split}", Y[:3])
+            '''
+            # get_batch_parity(split) # get_batch_mode(split) # get_batch_sorting(split) # get_batch_counting(split) # get_batch(split)
             with ctx:
                 logits, loss = model(X, Y)
             losses[k] = loss.item()
@@ -244,7 +381,8 @@ if wandb_log and master_process:
     wandb.init(project=wandb_project, name=wandb_run_name, config=config)
 
 # training loop
-X, Y = get_batch('train') # fetch the very first batch
+X, Y = get_batch_modular_arithmetic_simple('train')
+# get_batch_parity('train') # get_batch_mode('train') # get_batch_sorting('train') # get_batch_counting('train') # get_batch('train') # fetch the very first batch
 t0 = time.time()
 local_iter_num = 0 # number of iterations in the lifetime of this process
 raw_model = model.module if ddp else model # unwrap DDP container if needed
@@ -297,7 +435,8 @@ while True:
             logits, loss = model(X, Y)
             loss = loss / gradient_accumulation_steps # scale the loss to account for gradient accumulation
         # immediately async prefetch next batch while model is doing the forward pass on the GPU
-        X, Y = get_batch('train')
+        X, Y = get_batch_modular_arithmetic_simple('train')
+        # get_batch_parity('train') # get_batch_mode('train') # get_batch_sorting('train') # get_batch_counting('train') # get_batch('train')
         # backward pass, with gradient scaling if training in fp16
         scaler.scale(loss).backward()
     # clip the gradient
