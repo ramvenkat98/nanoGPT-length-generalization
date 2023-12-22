@@ -6,6 +6,5 @@ A fork of the nanoGPT repo, used to study the length generalization of small tra
 3. In-Context Learning with the same technique to understand its effectiveness.
 
 The link to the full write-up can be found [here](https://github.com/ramvenkat98/nanoGPT-length-generalization/blob/master/cs330_final_report.pdf). An image of the extended abstract for convenience:
-![Extended Abstract]([https://github.com/username/repository/blob/main/imagefilename.png](https://github.com/ramvenkat98/nanoGPT-length-generalization/blob/master/assets/extended_abstract.png)https://github.com/ramvenkat98/nanoGPT-length-generalization/blob/master/assets/extended_abstract.png)
-
+![Extended Abstract](https://github.com/ramvenkat98/nanoGPT-length-generalization/blob/master/assets/extended_abstract.png)
 
