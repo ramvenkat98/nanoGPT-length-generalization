@@ -5,4 +5,7 @@ A fork of the nanoGPT repo, used to study the length generalization of small tra
 2. Studying length generalization of modular arithmetic mod 5 (+, -, x), using the scratchpad + index hints technique developed for parity in the paper above.
 3. In-Context Learning with the same technique to understand its effectiveness.
 
-The link to the full write-up can be found [here](https://github.com/ramvenkat98/nanoGPT-length-generalization/blob/master/cs330_final_report.pdf).
+The link to the full write-up can be found [here](https://github.com/ramvenkat98/nanoGPT-length-generalization/blob/master/cs330_final_report.pdf). An image of the extended abstract for convenience:
+![Extended Abstract]([https://github.com/username/repository/blob/main/imagefilename.png](https://github.com/ramvenkat98/nanoGPT-length-generalization/blob/master/assets/extended_abstract.png)https://github.com/ramvenkat98/nanoGPT-length-generalization/blob/master/assets/extended_abstract.png)
+
+
